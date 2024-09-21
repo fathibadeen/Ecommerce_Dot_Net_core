@@ -1,20 +1,26 @@
-using Ecommerce.Infrastructure.Presistance;
+using Ecommerce.Application.Contracts.Services;
+using Ecommerce.Application.Repositories;
+using Ecommerce.Application.Repository;
+using Ecommerce.Application.Services;
+using Ecommerce.Infrastructure.Persistence; // Add this to reference your DbContext
+using Ecommerce.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add services to the container.
+builder.Services.AddDbContext<EcommerceDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDbContext<DBContextApplication>(options =>
-     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-// Add services to the container.
+// Register UnitOfWork, Repositories, and Services
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ReviewService>();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -28,9 +34,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
